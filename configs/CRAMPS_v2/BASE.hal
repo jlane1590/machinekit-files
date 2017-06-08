@@ -1,0 +1,35 @@
+# #######################################
+#
+# HAL file for BeagleBone + BeBoPr cape with 4 steppers
+#
+# Derived from example hm2-stepper config
+#
+# ########################################
+
+# Launch the setup script to make sure hardware setup looks good
+loadusr -w ./setup.sh
+
+
+# ###################################
+# Core EMC/HAL Loads
+# ###################################
+
+# kinematics
+#loadrt trivkins
+
+# motion controller, get name and thread periods from ini file
+# trajectory planner
+#loadrt tp
+#loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES tp=tp kins=trivkins
+
+
+#loadrt hal_arm335xPWM pwmgens="ePWM0,ePWM1,ePWM2" frequency=25000 minDC=0 maxDC=100 type=1
+loadrt hal_arm335xPWMSS eqeps="eQEP0" epwms="ePWM0" frequency=25000 minDC=0 maxDC=100 type=1
+
+
+# ################################################
+# THREADS
+# ################################################
+
+addf pwmss.update							servo-thread
+
