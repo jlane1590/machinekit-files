@@ -30,7 +30,8 @@ loadrt [PRUCONF](DRIVER) prucode=$(HAL_RTMOD_DIR)/[PRUCONF](PRUBIN) [PRUCONF](CO
 loadrt pid count=4
 loadrt limit1 count=2
 
-loadrt hal_arm335xPWM pwmgens="ePWM0,ePWM1,ePWM2" frequency=25000 minDC=0 maxDC=100 type=1
+#loadrt hal_arm335xPWM pwmgens="ePWM0,ePWM1,ePWM2" frequency=25000 minDC=0 maxDC=100 type=1
+loadrt hal_arm335xPWMSS eqeps="eQEP0" epwms="ePWM0" frequency=25000 minDC=0 maxDC=100 type=1
 
 loadrt streamer depth=1000 cfg="ff"
 
@@ -59,7 +60,7 @@ addf hpg.update				  			servo-thread
 addf bb_gpio.write                        servo-thread
 addf ePWM.update						servo-thread
 addf streamer.0								servo-thread
-
+#addf pwmss.update			servo-thread
 
 # ######################################################
 # Axis-of-motion Specific Configs (not the GUI)
