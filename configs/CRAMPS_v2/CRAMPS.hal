@@ -31,7 +31,7 @@ loadrt pid count=4
 loadrt limit1 count=2
 
 #loadrt hal_arm335xPWM pwmgens="ePWM0,ePWM1,ePWM2" frequency=25000 minDC=0 maxDC=100 type=1
-loadrt hal_arm335xPWMSS eqeps="eQEP0" epwms="ePWM0" frequency=25000 minDC=0 maxDC=100 type=1
+loadrt hal_arm335xPWMSS eqeps="eQEP0" epwms="ePWM0,ePWM1,ePWM2" frequency=25000 minDC=0 maxDC=100 type=1
 
 loadrt streamer depth=1000 cfg="ff"
 
@@ -60,7 +60,7 @@ addf hpg.update				  			servo-thread
 addf bb_gpio.write                        servo-thread
 #addf ePWM.update						servo-thread
 addf streamer.0								servo-thread
-#addf pwmss.update			servo-thread
+addf pwmss.update			servo-thread
 
 # ######################################################
 # Axis-of-motion Specific Configs (not the GUI)
@@ -105,55 +105,55 @@ net mot0.fb pid.2.feedback <= hpg.encoder.00.chan.00.position
 net mot1.input pid.3.command <= streamer.0.pin.1
 net mot1.fb pid.3.feedback <= hpg.encoder.00.chan.01.position
 
-#net aOut ePWM0.dir_A => bb_gpio.p9.out-23
-#net aOut_inv ePWM0.dir_A_inv => bb_gpio.p9.out-25
+net aOut ePWM0.dir_A => bb_gpio.p9.out-23
+net aOut_inv ePWM0.dir_A_inv => bb_gpio.p9.out-25
 
-#net bOut ePWM0.dir_B => bb_gpio.p8.out-11
-#net bOut_inv ePWM0.dir_B_inv => bb_gpio.p8.out-12
+net bOut ePWM0.dir_B => bb_gpio.p8.out-11
+net bOut_inv ePWM0.dir_B_inv => bb_gpio.p8.out-12
 
 # ################
 # hal_arm335xPWM
 # ################
 
-#newsig PWM0A.enable bit
-#sets PWM0A.enable FALSE
-#
-#newsig PWM0B.enable bit
-#sets PWM0B.enable FALSE
-#
-#newsig PWM0A.dc float
-#sets PWM0A.dc 0
-#
-#newsig PWM0B.dc float
-#sets PWM0B.dc 0
-#
-#setp ePWM0.dc_scale	7920
-#setp ePWM1.dc_scale	100
-#setp ePWM2.dc_scale	100
-#
-#net PWM0A.enable <= axis.0.amp-enable-out
-#net PWM0A.enable => ePWM0.en_A
-#net PWM0A.enable => ePWM1.en_A
-#net PWM0A.enable => ePWM2.en_A
-#net PWM0A.enable => pid.2.enable
-#net PWM0A.enable => pid.3.enable
-#
-#net PWM0B.enable <= axis.1.amp-enable-out
-#net PWM0B.enable => ePWM0.en_B
-#net PWM0B.enable => ePWM1.en_B
-#net PWM0B.enable => ePWM2.en_B
-#
-##net PWM0A.dc <= axis.0.motor-pos-cmd
-#net PWM0A.dc <= pid.2.output
-#net PWM0A.dc => ePWM0.dc_A
-#net PWM0A.dc => ePWM1.dc_A
-#net PWM0A.dc => ePWM2.dc_A
-#
-##net PWM0B.dc <= axis.1.motor-pos-cmd
-#net PWM0B.dc <= pid.3.output
-#net PWM0B.dc => ePWM0.dc_B
-#net PWM0B.dc => ePWM1.dc_B
-#net PWM0B.dc => ePWM2.dc_B
+newsig PWM0A.enable bit
+sets PWM0A.enable FALSE
+
+newsig PWM0B.enable bit
+sets PWM0B.enable FALSE
+
+newsig PWM0A.dc float
+sets PWM0A.dc 0
+
+newsig PWM0B.dc float
+sets PWM0B.dc 0
+
+setp ePWM0.dc_scale	7920
+setp ePWM1.dc_scale	100
+setp ePWM2.dc_scale	100
+
+net PWM0A.enable <= axis.0.amp-enable-out
+net PWM0A.enable => ePWM0.en_A
+net PWM0A.enable => ePWM1.en_A
+net PWM0A.enable => ePWM2.en_A
+net PWM0A.enable => pid.2.enable
+net PWM0A.enable => pid.3.enable
+
+net PWM0B.enable <= axis.1.amp-enable-out
+net PWM0B.enable => ePWM0.en_B
+net PWM0B.enable => ePWM1.en_B
+net PWM0B.enable => ePWM2.en_B
+
+#net PWM0A.dc <= axis.0.motor-pos-cmd
+net PWM0A.dc <= pid.2.output
+net PWM0A.dc => ePWM0.dc_A
+net PWM0A.dc => ePWM1.dc_A
+net PWM0A.dc => ePWM2.dc_A
+
+#net PWM0B.dc <= axis.1.motor-pos-cmd
+net PWM0B.dc <= pid.3.output
+net PWM0B.dc => ePWM0.dc_B
+net PWM0B.dc => ePWM1.dc_B
+net PWM0B.dc => ePWM2.dc_B
 
 
 
@@ -167,7 +167,7 @@ sets emcmot.00.enable FALSE
 
 #net emcmot.00.enable <= axis.0.amp-enable-out
 #net emcmot.00.enable => hpg.stepgen.00.enable
-##net PWM0A.enable => hpg.stepgen.00.enable
+net PWM0A.enable => hpg.stepgen.00.enable
 
 
 # position command and feedback
@@ -208,7 +208,7 @@ sets emcmot.01.enable FALSE
 
 #net emcmot.01.enable <= axis.1.amp-enable-out
 #net emcmot.01.enable => hpg.stepgen.01.enable
-##net PWM0B.enable => hpg.stepgen.01.enable
+net PWM0B.enable => hpg.stepgen.01.enable
 
 
 # position command and feedback

@@ -15,12 +15,12 @@ loadusr -w ./setup.sh
 # ###################################
 
 # kinematics
-#loadrt trivkins
+loadrt trivkins
 
 # motion controller, get name and thread periods from ini file
 # trajectory planner
-#loadrt tp
-#loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES tp=tp kins=trivkins
+loadrt tp
+loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES tp=tp kins=trivkins
 
 
 #loadrt hal_arm335xPWM pwmgens="ePWM0,ePWM1,ePWM2" frequency=25000 minDC=0 maxDC=100 type=1
