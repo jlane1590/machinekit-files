@@ -1,0 +1,362 @@
+# ########################################
+#
+# HAL file for BeagleBone for Modified Paradex Stewart Platform
+#
+# ########################################
+
+# Launch the setup script to make sure hardware setup looks good
+loadusr -w ./setup.sh
+
+# ###################################
+# Core EMC/HAL Loads
+# ###################################
+
+# Kinematics
+loadrt genhexkins
+
+# Motion controller, get name and thread periods from ini file
+# Trajectory planner
+loadrt tp
+loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD traj_period_nsec=[EMCMOT]TRAJ_PERIOD num_joints=[TRAJ]AXES tp=tp kins=genhexkins
+#loadrt ddt count=9
+
+# GPIO Driver - outputs are pwm direction pins, inputs are homing switches
+loadrt hal_bb_gpio output_pins=811,812,822,823,824,825,826,923,925 input_pins=807,808,809,810,817,911,913
+
+# HAL PRU generic driver - 4 quadrature encoder counters
+loadrt [PRUCONF](DRIVER) prucode=$(HAL_RTMOD_DIR)/[PRUCONF](PRUBIN) [PRUCONF](CONFIG) halname=hpg
+
+$ PID
+loadrt pid count=6
+
+# PWMSS driver - 3 eQEP encoder counters, 6 pwm generators
+loadrt hal_arm335xPWMSS eqeps="eQEP0,eQEP1,eQEP2" epwms="ePWM0,ePWM1,ePWM2" frequency=25000 minDC=0 maxDC=100 type=1
+
+# HAL streamer to read stdin for pose commands
+loadrt streamer depth=1000 cfg="ffffff"
+loadusr halstreamer -N hstreamer
+
+# ################################################
+# THREADS
+# ################################################
+
+# motion controller functions
+addf motion-command-handler 				servo-thread
+addf motion-controller							servo-thread
+# HAL_PRU_GENERIC functions
+addf hpg.capture-position						servo-thread
+addf hpg.update										servo-thread
+# GPIO functions
+addf bb_gpio.read									servo-thread
+addf bb_gpio.write									servo-thread
+# PID functions
+addf pid.0.do-pid-calcs							servo-thread
+addf pid.1.do-pid-calcs							servo-thread
+addf pid.2.do-pid-calcs							servo-thread
+addf pid.3.do-pid-calcs							servo-thread
+addf pid.4.do-pid-calcs							servo-thread
+addf pid.5.do-pid-calcs							servo-thread
+# PWMSS function
+addf pwmss.update								servo-thread
+# HAL streamer function
+addf streamer.0										servo-thread
+
+# ################
+# HPG ENCODER SETUP
+# ################
+
+setp hpg.encoder.00.chan.00.A-pin					15
+setp hpg.encoder.00.chan.00.B-pin        			14
+#setp hpg.encoder.00.chan.00.index-pin      	17
+#setp hpg.encoder.00.chan.00.index-enable 	0
+#setp hpg.encoder.00.chan.00.counter-mode	0
+#setp hpg.encoder.00.chan.00.reset				0
+setp hpg.encoder.00.chan.00.scale					1.0
+
+setp hpg.encoder.00.chan.01.A-pin        			16
+setp hpg.encoder.00.chan.01.B-pin        			7
+#setp hpg.encoder.00.chan.01.index-pin      	17
+#setp hpg.encoder.00.chan.01.index-enable 	0
+#setp hpg.encoder.00.chan.01.counter-mode	0
+#setp hpg.encoder.00.chan.01.reset				0
+setp hpg.encoder.00.chan.01.scale					1.0
+
+setp hpg.encoder.00.chan.02.A-pin        			1
+setp hpg.encoder.00.chan.02.B-pin        			2
+#setp hpg.encoder.00.chan.02.index-pin      	17
+#setp hpg.encoder.00.chan.02.index-enable 	0
+#setp hpg.encoder.00.chan.02.counter-mode	0
+#setp hpg.encoder.00.chan.02.reset				0
+setp hpg.encoder.00.chan.02.scale					1.0
+
+setp hpg.encoder.00.chan.03.A-pin        			0
+setp hpg.encoder.00.chan.03.B-pin        			6
+#setp hpg.encoder.00.chan.03.index-pin      	17
+#setp hpg.encoder.00.chan.03.index-enable 	0
+#setp hpg.encoder.00.chan.03.counter-mode	0
+#setp hpg.encoder.00.chan.03.reset				0
+setp hpg.encoder.00.chan.03.scale					1.0
+
+# ######################
+# PWMSS SETUP
+# ######################
+
+setp ePWM0.dc_scale				7920
+setp ePWM1.dc_scale				7920
+setp ePWM2.dc_scale				7920
+
+setp eQEP0.index-enable 		0
+setp eQEP0.position-scale 		1.0
+
+setp eQEP1.index-enable 		0
+setp eQEP1.position-scale 		1.0
+
+setp eQEP2.index-enable 		0
+setp eQEP2.position-scale 		1.0
+
+# ######################
+# PID SETUP
+# ######################
+
+setp pid.0.maxoutput				7920
+setp pid.0.deadband 				50
+setp pid.0.Pgain 					20
+setp pid.0.Igain 						20
+setp pid.0.Dgain 					20
+
+setp pid.1.maxoutput 				7920
+setp pid.1.deadband 				50
+setp pid.1.Pgain 					20
+setp pid.1.Igain 						20
+setp pid.1.Dgain 					20
+
+setp pid.2.maxoutput 				7920
+setp pid.2.deadband 				50
+setp pid.2.Pgain 					20
+setp pid.2.Igain 						20
+setp pid.2.Dgain 					20
+
+setp pid.3.maxoutput 				7920
+setp pid.3.deadband 				50
+setp pid.3.Pgain 					20
+setp pid.3.Igain 						20
+setp pid.3.Dgain 					20
+
+setp pid.4.maxoutput 				7920
+setp pid.4.deadband 				50
+setp pid.4.Pgain 					20
+setp pid.4.Igain 						20
+setp pid.4.Dgain 					20
+
+setp pid.5.maxoutput 				7920
+setp pid.5.deadband 				50
+setp pid.5.Pgain 					20
+setp pid.5.Igain 						20
+setp pid.5.Dgain 					20
+
+# ################
+# X [0] Axis
+# ################
+
+# axis enable chain
+newsig motor.00.enable bit
+sets motor.00.enable FALSE
+
+net motor.00.enable <= axis.0.amp-enable-out
+net motor.00.enable => ePWM0.en_A
+net motor.00.enable => pid.0.enable
+
+# position command, feedback, and velocity output
+net motor.00.pos-cmd <= axis.0.motor-pos-cmd
+net motor.00.pos-cmd => pid.0.command
+
+net motor.00.pos-fb <= eQEP0.position
+net motor.00.pos-fb => axis.0.motor-pos-fb
+net motor.00.pos-fb => pid.0.feedback
+
+net motor.00.vel-out <= pid.0.output
+net motor.00.vel-out => ePWM0.dc_A
+
+net motor.00.vel-dir <= ePWM0.dir_A
+net motor.00.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+
+# ################
+# Y [1] Axis
+# ################
+
+# axis enable chain
+newsig motor.01.enable bit
+sets motor.01.enable FALSE
+
+net motor.01.enable <= axis.1.amp-enable-out
+net motor.01.enable => ePWM0.en_B
+net motor.01.enable => pid.1.enable
+
+# position command, feedback, and velocity output
+net motor.01.pos-cmd <= axis.1.motor-pos-cmd
+net motor.01.pos-cmd => pid.1.command
+
+net motor.01.pos-fb <= eQEP1.position
+net motor.01.pos-fb => axis.1.motor-pos-fb
+net motor.01.pos-fb => pid.1.feedback
+
+net motor.01.vel-out <= pid.1.output
+net motor.01.vel-out => ePWM0.dc_B
+
+net motor.01.vel-dir <= ePWM0.dir_B
+net motor.01.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+
+# ################
+# Z [2] Axis
+# ################
+
+# axis enable chain
+newsig motor.02.enable bit
+sets motor.02.enable FALSE
+
+net motor.02.enable <= axis.2.amp-enable-out
+net motor.02.enable => ePWM1.en_A
+net motor.02.enable => pid.2.enable
+
+# position command, feedback, and velocity output
+net motor.02.pos-cmd <= axis.2.motor-pos-cmd
+net motor.02.pos-cmd => pid.2.command
+
+net motor.02.pos-fb <= eQEP2.position
+net motor.02.pos-fb => axis.2.motor-pos-fb
+net motor.02.pos-fb => pid.2.feedback
+
+net motor.02.vel-out <= pid.2.output
+net motor.02.vel-out => ePWM1.dc_A
+
+net motor.02.vel-dir <= ePWM1.dir_A
+net motor.02.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+
+# ################
+# A [3] Axis
+# ################
+
+# axis enable chain
+newsig motor.03.enable bit
+sets motor.03.enable FALSE
+
+net motor.03.enable <= axis.3.amp-enable-out
+net motor.03.enable => ePWM1.en_B
+net motor.03.enable => pid.3.enable
+
+# position command, feedback, and velocity output
+net motor.03.pos-cmd <= axis.3.motor-pos-cmd
+net motor.03.pos-cmd => pid.3.command
+
+net motor.03.pos-fb <= hpg.encoder.00.chan.00.position
+net motor.03.pos-fb => axis.3.motor-pos-fb
+net motor.03.pos-fb => pid.3.feedback
+
+net motor.03.vel-out <= pid.3.output
+net motor.03.vel-out => ePWM1.dc_B
+
+net motor.03.vel-dir <= ePWM1.dir_B
+net motor.03.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+
+# ################
+# B [4] Axis
+# ################
+
+# axis enable chain
+newsig motor.04.enable bit
+sets motor.04.enable FALSE
+
+net motor.04.enable <= axis.4.amp-enable-out
+net motor.04.enable => ePWM2.en_A
+net motor.04.enable => pid.4.enable
+
+# position command, feedback, and velocity output
+net motor.04.pos-cmd <= axis.4.motor-pos-cmd
+net motor.04.pos-cmd => pid.4.command
+
+net motor.04.pos-fb <= hpg.encoder.00.chan.01.position
+net motor.04.pos-fb => axis.4.motor-pos-fb
+net motor.04.pos-fb => pid.4.feedback
+
+net motor.04.vel-out <= pid.4.output
+net motor.04.vel-out => ePWM2.dc_A
+
+net motor.04.vel-dir <= ePWM2.dir_A
+net motor.04.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+
+# ################
+# C [5] Axis
+# ################
+
+# axis enable chain
+newsig motor.05.enable bit
+sets motor.05.enable FALSE
+
+net motor.05.enable <= axis.5.amp-enable-out
+net motor.05.enable => ePWM2.en_B
+net motor.05.enable => pid.5.enable
+
+# position command, feedback, and velocity output
+net motor.05.pos-cmd <= axis.5.motor-pos-cmd
+net motor.05.pos-cmd => pid.5.command
+
+net motor.05.pos-fb <= hpg.encoder.00.chan.02.position
+net motor.05.pos-fb => axis.5.motor-pos-fb
+net motor.05.pos-fb => pid.5.feedback
+
+net motor.05.vel-out <= pid.5.output
+net motor.05.vel-out => ePWM2.dc_B
+
+net motor.05.vel-dir <= ePWM2.dir_B
+net motor.05.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+
+# ##################################################
+# Standard I/O - EStop, Enables, Limit Switches, Etc
+# ##################################################
+
+# estop loopback
+net estop-loop iocontrol.0.user-enable-out iocontrol.0.emc-enable-in
+
+# create signals for tool loading loopback
+net tool-prep-loop iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+net tool-change-loop iocontrol.0.tool-change => iocontrol.0.tool-changed
+
+# ################
+# Limit Switches (Homing)
+# ################
+
+newsig limit-x bit
+newsig limit-y bit
+newsig limit-z bit
+newsig limit-a bit
+newsig limit-b bit
+newsig limit-c bit
+
+net limit-x <= bb_gpio.p8.in-08
+net limit-y <= bb_gpio.p8.in-07
+net limit-z <= bb_gpio.p8.in-10
+net limit-a <= bb_gpio.p8.in-09
+net limit-b <= bb_gpio.p9.in-13
+net limit-c <= bb_gpio.p9.in-11
+
+# Adjust as needed for your switch polarity
+setp bb_gpio.p8.in-08.invert 0
+setp bb_gpio.p8.in-07.invert 0
+setp bb_gpio.p8.in-10.invert 0
+setp bb_gpio.p8.in-09.invert 0
+setp bb_gpio.p9.in-11.invert 0
+setp bb_gpio.p9.in-13.invert 0
+
+net limit-x => axis.0.home-sw-in
+net limit-y => axis.1.home-sw-in
+net limit-z => axis.2.home-sw-in
+net limit-a => axis.3.home-sw-in
+net limit-b => axis.4.home-sw-in
+net limit-c => axis.5.home-sw-in
+
+#net limit-x-min => axis.0.neg-lim-sw-in
+#net limit-x-max => axis.0.pos-lim-sw-in
+#net limit-y-min => axis.1.neg-lim-sw-in
+#net limit-y-max => axis.1.pos-lim-sw-in
+#net limit-z-min => axis.2.neg-lim-sw-in
+#net limit-z-max => axis.2.pos-lim-sw-in
