@@ -26,7 +26,7 @@ loadrt hal_bb_gpio output_pins=811,812,822,823,824,825,826,923,925 input_pins=80
 # HAL PRU generic driver - 4 quadrature encoder counters
 loadrt [PRUCONF](DRIVER) prucode=$(HAL_RTMOD_DIR)/[PRUCONF](PRUBIN) [PRUCONF](CONFIG) halname=hpg
 
-$ PID
+# PID
 loadrt pid count=6
 
 # PWMSS driver - 3 eQEP encoder counters, 6 pwm generators
@@ -204,7 +204,7 @@ net motor.01.vel-out <= pid.1.output
 net motor.01.vel-out => ePWM0.dc_B
 
 net motor.01.vel-dir <= ePWM0.dir_B
-net motor.01.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+net motor.01.vel-dir => bb_gpio.p9.out-25	#change to real gpio number
 
 # ################
 # Z [2] Axis
@@ -230,7 +230,7 @@ net motor.02.vel-out <= pid.2.output
 net motor.02.vel-out => ePWM1.dc_A
 
 net motor.02.vel-dir <= ePWM1.dir_A
-net motor.02.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+net motor.02.vel-dir => bb_gpio.p8.out-23	#change to real gpio number
 
 # ################
 # A [3] Axis
@@ -256,7 +256,7 @@ net motor.03.vel-out <= pid.3.output
 net motor.03.vel-out => ePWM1.dc_B
 
 net motor.03.vel-dir <= ePWM1.dir_B
-net motor.03.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+net motor.03.vel-dir => bb_gpio.p8.out-24	#change to real gpio number
 
 # ################
 # B [4] Axis
@@ -282,7 +282,7 @@ net motor.04.vel-out <= pid.4.output
 net motor.04.vel-out => ePWM2.dc_A
 
 net motor.04.vel-dir <= ePWM2.dir_A
-net motor.04.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+net motor.04.vel-dir => bb_gpio.p8.out-25	#change to real gpio number
 
 # ################
 # C [5] Axis
@@ -308,7 +308,7 @@ net motor.05.vel-out <= pid.5.output
 net motor.05.vel-out => ePWM2.dc_B
 
 net motor.05.vel-dir <= ePWM2.dir_B
-net motor.05.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+net motor.05.vel-dir => bb_gpio.p8.out-26	#change to real gpio number
 
 # ##################################################
 # Standard I/O - EStop, Enables, Limit Switches, Etc
