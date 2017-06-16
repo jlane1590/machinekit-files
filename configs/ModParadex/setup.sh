@@ -75,56 +75,49 @@ fi
 
 sudo $(which config-pin) -f - <<- EOF
 
-	P8.07	in	# X Max
-	P8.08	in	# X Min
-	P8.09	in	# Y Max
-	P8.10	in	# Y Min
-	P8.11	low	# FET 1 : Heated Bed
-	P8.12	low	# X Dir
-	P8.13	low	# X Step
-	P8.14	low	# Y Dir
-	P8.15	low	# Y Step
-	P8.16	high	# eMMC Enable
-	P8.17	in	# ESTOP
-	P8.18	low	# Z Dir
-	P8.19	low	# Z Step
+	# eQEP encoder channel input pins
+	P8.11	qep		#eQEP2B_in
+	P8.12	qep		#eQEP2A_in
+	P8.33	qep		#eQEP1B_in
+	P8.35	qep		#eQEP1A_in
+	P9.27	qep		#eQEP0B_in
+	P9.42	qep		#eQEP0A_in
+	
+	# ePWM/eCAP pwm output pins
+	P8.13	pwm		#ePWM2B
+	P8.19	pwm		#ePWM2A
+	P9.14	pwm		#ePWM1A
+	P9.16	pwm		#ePWM1B
+	P9.21	pwm		#ePWM0B
+	P9.22	pwm		#ePWM0A
+#	P9.28	pwm2	#eCAP2
+	
+	# hpg encoder pru direct input pins
+	P8.15	pruin		#hpg0A_in pru0_15
+	P8.16	pruin		#hpg0B_in pru0_14
+	P9.24	pruin		#hpg1A_in pru0_16
+	P9.25	pruin		#hpg1B_in pru0_7
+	P9.29	pruin		#hpg2A_in pru0_1
+	P9.30	pruin		#hpg2B_in pru0_2
+	P9.31	pruin		#hpg3A_in pru0_0
+	P9.91	pruin		#hpg3B_in pru0_6, connected to P9.41
+	
+	# pwm direction output pins
+	P8.14	gpio		#ePWM2B_dir
+	P8.17	gpio		#ePWM2A_dir
+	P9.13	gpio		#ePWM1A_dir
+	P9.15	gpio		#ePWM1B_dir
+	P9.19	gpio		#ePWM0B_dir
+	P9.23	gpio		#ePWM0A_dir
+#	P9.26	gpio		#eCAP2_dir
 
-# eMMC signals, uncomment *ONLY* if you have disabled the on-board eMMC!
-# Machinekit images disable eMMC and HDMI audio by default in uEnv.txt:
-#  capemgr.disable_partno=BB-BONELT-HDMI,BB-BONE-EMMC-2G
-#	P8.22	low	# Servo 4
-#	P8.23	low	# Servo 3
-#	P8.24	low	# Servo 2
-#	P8.25	low	# Servo 1
-
-	P8.26	high	# ESTOP Out
-
-	P9.11	in	# Z Max
-	P9.12	low	# E0 Dir
-	P9.13	in	# Z Min
-	P9.14	high	# Axis Enable, active low
-	P9.15	low	# FET 2 : E0
-	P9.16	low	# E0 Step
-	P9.17	low	# E1 Step
-	P9.18	low	# E1 Dir
-#	P9.19	low	# I2C SCL
-#	P9.20	low	# I2C SDA
-	P9.21	low	# FET 4 : E1
-	P9.22	low	# FET 6
-	P9.23	low	# Machine Power
-	P9.24	low	# E2 Step
-	P9.25	low	# LED
-	P9.26	low	# E2 Dir
-	P9.27	low	# FET 3 : E2
-	P9.28	low	# SPI CS0
-	P9.29	low	# SPI MISO
-	P9.30	low	# SPI MOSI
-	P9.31	low	# SPI SCLK
-
-	P9.41	low	# FET 5
-	P9.91	in	# Reserved, connected to P9.41
-
-	P9.42	low	# SPI CS1
-	P9.92	in	# Reserved, connected to P9.42
+	# limit switch input pins
+	P8.34	gpio		#limit-x
+	P8.36	gpio		#limit-y
+	P8.38	gpio		#limit-z
+	P8.40	gpio		#limit-a
+	P8.42	gpio		#limit-b
+	P8.44	gpio		#limit-c
+#	P8.46	gpio		#limit-u
 EOF
 

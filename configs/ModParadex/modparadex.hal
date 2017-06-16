@@ -21,7 +21,7 @@ loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD traj_period_nsec=[E
 #loadrt ddt count=9
 
 # GPIO Driver - outputs are pwm direction pins, inputs are homing switches
-loadrt hal_bb_gpio output_pins=811,812,822,823,824,825,826,923,925 input_pins=807,808,809,810,817,911,913
+loadrt hal_bb_gpio output_pins=814,817,913,915,919,923 input_pins=834,836,838,840,842,844,846
 
 # HAL PRU generic driver - 4 quadrature encoder counters
 loadrt [PRUCONF](DRIVER) prucode=$(HAL_RTMOD_DIR)/[PRUCONF](PRUBIN) [PRUCONF](CONFIG) halname=hpg
@@ -71,7 +71,7 @@ setp hpg.encoder.00.chan.00.B-pin        			14
 #setp hpg.encoder.00.chan.00.index-enable 	0
 #setp hpg.encoder.00.chan.00.counter-mode	0
 #setp hpg.encoder.00.chan.00.reset				0
-setp hpg.encoder.00.chan.00.scale					1.0
+setp hpg.encoder.00.chan.00.scale					844.8
 
 setp hpg.encoder.00.chan.01.A-pin        			16
 setp hpg.encoder.00.chan.01.B-pin        			7
@@ -79,7 +79,7 @@ setp hpg.encoder.00.chan.01.B-pin        			7
 #setp hpg.encoder.00.chan.01.index-enable 	0
 #setp hpg.encoder.00.chan.01.counter-mode	0
 #setp hpg.encoder.00.chan.01.reset				0
-setp hpg.encoder.00.chan.01.scale					1.0
+setp hpg.encoder.00.chan.01.scale					844.8
 
 setp hpg.encoder.00.chan.02.A-pin        			1
 setp hpg.encoder.00.chan.02.B-pin        			2
@@ -87,7 +87,7 @@ setp hpg.encoder.00.chan.02.B-pin        			2
 #setp hpg.encoder.00.chan.02.index-enable 	0
 #setp hpg.encoder.00.chan.02.counter-mode	0
 #setp hpg.encoder.00.chan.02.reset				0
-setp hpg.encoder.00.chan.02.scale					1.0
+setp hpg.encoder.00.chan.02.scale					844.8
 
 setp hpg.encoder.00.chan.03.A-pin        			0
 setp hpg.encoder.00.chan.03.B-pin        			6
@@ -95,61 +95,63 @@ setp hpg.encoder.00.chan.03.B-pin        			6
 #setp hpg.encoder.00.chan.03.index-enable 	0
 #setp hpg.encoder.00.chan.03.counter-mode	0
 #setp hpg.encoder.00.chan.03.reset				0
-setp hpg.encoder.00.chan.03.scale					1.0
+setp hpg.encoder.00.chan.03.scale					9.98
 
 # ######################
 # PWMSS SETUP
 # ######################
 
-setp ePWM0.dc_scale				7920
-setp ePWM1.dc_scale				7920
-setp ePWM2.dc_scale				7920
+# PID outputs required speed in in/sec, assume 5in/sec is the max linear speed the motors can produce under load
+# so 5in/sec corresponds to 100% duty cycle
+setp ePWM0.dc_scale				5.0
+setp ePWM1.dc_scale				5.0
+setp ePWM2.dc_scale				5.0
 
 setp eQEP0.index-enable 		0
-setp eQEP0.position-scale 		1.0
+setp eQEP0.position-scale 		844.8
 
 setp eQEP1.index-enable 		0
-setp eQEP1.position-scale 		1.0
+setp eQEP1.position-scale 		844.8
 
 setp eQEP2.index-enable 		0
-setp eQEP2.position-scale 		1.0
+setp eQEP2.position-scale 		844.8
 
 # ######################
 # PID SETUP
 # ######################
 
-setp pid.0.maxoutput				7920
-setp pid.0.deadband 				50
+setp pid.0.maxoutput				5.0 #assume max desired linear speed is 5in/sec
+setp pid.0.deadband 				0.05 #assume 0.05in error is close enough
 setp pid.0.Pgain 					20
 setp pid.0.Igain 						20
 setp pid.0.Dgain 					20
 
-setp pid.1.maxoutput 				7920
-setp pid.1.deadband 				50
+setp pid.1.maxoutput 				5.0
+setp pid.1.deadband 				0.05
 setp pid.1.Pgain 					20
 setp pid.1.Igain 						20
 setp pid.1.Dgain 					20
 
-setp pid.2.maxoutput 				7920
-setp pid.2.deadband 				50
+setp pid.2.maxoutput 				5.0
+setp pid.2.deadband 				0.05
 setp pid.2.Pgain 					20
 setp pid.2.Igain 						20
 setp pid.2.Dgain 					20
 
-setp pid.3.maxoutput 				7920
-setp pid.3.deadband 				50
+setp pid.3.maxoutput 				5.0
+setp pid.3.deadband 				0.05
 setp pid.3.Pgain 					20
 setp pid.3.Igain 						20
 setp pid.3.Dgain 					20
 
-setp pid.4.maxoutput 				7920
-setp pid.4.deadband 				50
+setp pid.4.maxoutput 				5.0
+setp pid.4.deadband 				0.05
 setp pid.4.Pgain 					20
 setp pid.4.Igain 						20
 setp pid.4.Dgain 					20
 
-setp pid.5.maxoutput 				7920
-setp pid.5.deadband 				50
+setp pid.5.maxoutput 				5.0
+setp pid.5.deadband 				0.05
 setp pid.5.Pgain 					20
 setp pid.5.Igain 						20
 setp pid.5.Dgain 					20
@@ -178,7 +180,7 @@ net motor.00.vel-out <= pid.0.output
 net motor.00.vel-out => ePWM0.dc_A
 
 net motor.00.vel-dir <= ePWM0.dir_A
-net motor.00.vel-dir => bb_gpio.p9.out-23	#change to real gpio number
+net motor.00.vel-dir => bb_gpio.p9.out-23
 
 # ################
 # Y [1] Axis
@@ -204,7 +206,7 @@ net motor.01.vel-out <= pid.1.output
 net motor.01.vel-out => ePWM0.dc_B
 
 net motor.01.vel-dir <= ePWM0.dir_B
-net motor.01.vel-dir => bb_gpio.p9.out-25	#change to real gpio number
+net motor.01.vel-dir => bb_gpio.p9.out-19
 
 # ################
 # Z [2] Axis
@@ -230,7 +232,7 @@ net motor.02.vel-out <= pid.2.output
 net motor.02.vel-out => ePWM1.dc_A
 
 net motor.02.vel-dir <= ePWM1.dir_A
-net motor.02.vel-dir => bb_gpio.p8.out-23	#change to real gpio number
+net motor.02.vel-dir => bb_gpio.p9.out-13
 
 # ################
 # A [3] Axis
@@ -256,7 +258,7 @@ net motor.03.vel-out <= pid.3.output
 net motor.03.vel-out => ePWM1.dc_B
 
 net motor.03.vel-dir <= ePWM1.dir_B
-net motor.03.vel-dir => bb_gpio.p8.out-24	#change to real gpio number
+net motor.03.vel-dir => bb_gpio.p9.out-15
 
 # ################
 # B [4] Axis
@@ -282,7 +284,7 @@ net motor.04.vel-out <= pid.4.output
 net motor.04.vel-out => ePWM2.dc_A
 
 net motor.04.vel-dir <= ePWM2.dir_A
-net motor.04.vel-dir => bb_gpio.p8.out-25	#change to real gpio number
+net motor.04.vel-dir => bb_gpio.p8.out-17
 
 # ################
 # C [5] Axis
@@ -308,7 +310,7 @@ net motor.05.vel-out <= pid.5.output
 net motor.05.vel-out => ePWM2.dc_B
 
 net motor.05.vel-dir <= ePWM2.dir_B
-net motor.05.vel-dir => bb_gpio.p8.out-26	#change to real gpio number
+net motor.05.vel-dir => bb_gpio.p8.out-14
 
 # ##################################################
 # Standard I/O - EStop, Enables, Limit Switches, Etc
@@ -332,12 +334,12 @@ newsig limit-a bit
 newsig limit-b bit
 newsig limit-c bit
 
-net limit-x <= bb_gpio.p8.in-08
-net limit-y <= bb_gpio.p8.in-07
-net limit-z <= bb_gpio.p8.in-10
-net limit-a <= bb_gpio.p8.in-09
-net limit-b <= bb_gpio.p9.in-13
-net limit-c <= bb_gpio.p9.in-11
+net limit-x <= bb_gpio.p8.in-34
+net limit-y <= bb_gpio.p8.in-36
+net limit-z <= bb_gpio.p8.in-38
+net limit-a <= bb_gpio.p8.in-40
+net limit-b <= bb_gpio.p8.in-42
+net limit-c <= bb_gpio.p8.in-44
 
 # Adjust as needed for your switch polarity
 setp bb_gpio.p8.in-08.invert 0
