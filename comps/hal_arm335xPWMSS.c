@@ -169,10 +169,12 @@ static void update_eqep(pwmss_t *pwmss, long period);
 static int export_epwm(epwm_t *epwm);
 static int setup_epwm(epwm_t *epwm);
 static void update_epwm(pwmss_t *pwmss, long period);
+
 void disable_epwm(epwm_t *epwm);
 void disable_channel(epwm_t *epwm, int channel);
 void enable_channel(epwm_t *epwm, int channel);
 void set_channel_dc(epwm_t *epwm, int channel);
+void set_ecap_dc(ecap_t *ecap);
 
 /*---------------------
  INIT and EXIT CODE
@@ -474,7 +476,87 @@ static void update(void *arg, long period)
 
 static void update_ecap(pwmss_t *pwmss, long period)
 {
+	hal_s32_t     i;
+	ecap_t *ecap;
 	
+    ecap = pwmss->ecap;
+	
+	for(i = 0; i < pwmss->numcap; i++)
+	{
+		ecap->scale = (*(ecap->scale_in));
+		ecap->en = (*(ecap->en_in));
+		
+		//check if scale parameter has changed
+		if(ecap->scale != ecap->oldScale) //scale parameter has changed, validate new scale value
+		{
+			
+			if((ecap->scale < 1e-20) && (ecap->scale > -1e-20)) // value too small, divide by zero is a bad thing
+			{
+				ecap->scale = 1.0;
+			}
+		}
+		
+		//calculate scaled duty cycle value
+		ecap->scaled_dc = (*(ecap->dc)) / ecap->scale;
+		
+		//clamp dc value if output is unidirectional
+		if(ecap->outputType == 0)
+		{
+			if(ecap->scaled_dc < 0.0)
+				ecap->scaled_dc = 0.0;
+		}
+		
+		//check if duty cycle is below the resolution of the pwm
+		if(ecap->scaled_dc < ecap->resolution && ecap->scaled_dc > -ecap->resolution) //dc is smaller than the resolution of the pwm counters and will be treated as 0
+		{
+			ecap->scaled_dc = 0.0;
+			ecap->en = 0;
+		}
+		
+		//output is to be disabled
+		if(!ecap->en)
+		{
+			ecap->scaled_dc = 0.0;
+			set_ecap_dc(ecap);
+		}
+		else //output is to be enabled
+		{
+			//set pwm direction
+			if(ecap->scaled_dc < 0.0)
+			{
+				ecap->dir = 1;
+				ecap->scaled_dc = -ecap->scaled_dc;
+			}
+			else
+			{
+				ecap->dir = 0;
+			}
+			
+			/* limit the duty cycle */
+			if(ecap->scaled_dc > ecap->max_dc) 
+			{
+				ecap->scaled_dc = ecap->max_dc;
+			}
+			else if(ecap->scaled_dc < ecap->min_dc)
+			{
+				ecap->scaled_dc = ecap->min_dc;
+			}
+			//check if scaled_dc has changed and update registers accordingly
+			if(ecap->scaled_dc != ecap->old_scaled_dc)
+				set_ecap_dc(ecap);
+			//check if the direction output has changed and update accordingly
+			if(ecap->outputType == 1)
+				if(ecap->dir != ecap->oldDir)
+					(*(ecap->dir_out)) = ecap->dir;
+		}
+		
+		ecap->oldEn = ecap->en;
+		ecap->old_scaled_dc = ecap->scaled_dc;
+		ecap->oldDir = ecap->dir;
+		ecap->oldScale = ecap->scale;
+		
+		epwm++;
+	}
 }
 
 static void update_eqep(pwmss_t *pwmss, long period)
@@ -834,7 +916,25 @@ static int setup_ecap(ecap_t *ecap)
 	ecap->resolution = 0.00025; //equates to 25kHz
 	ecap->outputType = type;
 
-	return 0;
+	/* compute and set CAP1 (APRD) for desired PWM frequency */
+	ecap->period = (hal_u32_t)(100_000_000.0f / frequency) ;
+	ecap->resolution = 1.0f/(float)ecap->period;
+
+	ecap->ecap_reg->CAP1 = (unsigned int)ecap->period;
+	
+	/* set phase shift to zero */
+	ecap->ecap_reg->CTRPHS = 0;
+	
+	/* reset time stamp counter */
+	ecap->ecap_reg->TSCTR = 0;
+	
+	/* set to APWM mode, set active high, disable sync in and out, run counter */
+	ecap->ecap_reg->ECCTL2 = (0x0 << 10) | (0x1 << 9) | (0x3 << 6) | (0x0 << 5) | (0x1 << 4);
+
+	/*  setting duty cycle (CAP2) */
+	ecap->ecap_reg->CAP2 = (unsigned int)((float)ecap->period * ecap->scaled_dc);
+	
+    return 0;
 }
 
 static int setup_eqep(eqep_t *eqep)
@@ -1182,6 +1282,16 @@ void set_channel_dc(epwm_t *epwm, int channel)
 		}
         epwm->epwm_reg->CMPB = CMPB_val;
     }
+}
+
+void set_ecap_dc(ecap_t *ecap)
+{
+	unsigned int CMP_val = (unsigned int)((float)ecap->period * ecap->scaled_dc);
+	if(CMP_val < 1)
+	{
+		ecap->en = 0;
+	}
+	ecap->ecap_reg->CAP2 = CMP_val;
 }
 
 
