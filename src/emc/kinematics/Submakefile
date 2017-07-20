@@ -1,0 +1,54 @@
+INCLUDES += emc/kinematics
+
+GENSERKINSSRCS := \
+	emc/kinematics/genserkins.c
+USERSRCS += $(GENSERKINSSRCS)
+
+#MODPARAKINSSRCS := \
+#	emc/kinematics/modparakins.c
+#USERSRCS += $(MODPARAKINSSRCS)
+
+DRAWBOTKINSSRCS := \
+	emc/kinematics/drawbotkins.c
+USERSRCS += $(DRAWBOTKINSSRCS)
+
+
+DELTAMODULESRCS := emc/kinematics/lineardeltakins.cc
+PYSRCS += $(DELTAMODULESRCS)
+$(call TOOBJS, $(DELTAMODULESRCS)): CFLAGS += -x c++ -Wno-declaration-after-statement
+
+DELTAMODULE := ../lib/python/lineardeltakins.so
+$(DELTAMODULE): $(call TOOBJS, $(DELTAMODULESRCS))
+	$(ECHO) Linking python module $(notdir $@)
+	$(CXX) $(LDFLAGS) -shared -o $@ $^ -l$(BOOST_PYTHON_LIB)
+PYTARGETS += $(DELTAMODULE)
+
+../bin/genserkins: $(call TOOBJS, $(GENSERKINSSRCS)) \
+	../lib/liblinuxcnchal.so \
+	../lib/libposemath.so \
+	../lib/librtapi_math.so.0
+	$(ECHO) Linking $(notdir $@)
+	$(Q)$(CC) $(LDFLAGS) -o $@ $^
+TARGETS += ../bin/genserkins
+
+../bin/drawbotkins: $(call TOOBJS, $(GENSERKINSSRCS)) \
+	../lib/liblinuxcnchal.so \
+	../lib/libposemath.so \
+	../lib/librtapi_math.so.0
+	$(ECHO) Linking $(notdir $@)
+	$(Q)$(CC) $(LDFLAGS) -o $@ $^
+TARGETS += ../bin/drawbotkins
+
+../bin/modparakins: $(call TOOBJS, $(GENSERKINSSRCS)) \
+	../lib/liblinuxcnchal.so \
+	../lib/libposemath.so \
+	../lib/librtapi_math.so.0
+	$(ECHO) Linking $(notdir $@)
+	$(Q)$(CC) $(LDFLAGS) -o $@ $^
+TARGETS += ../bin/modparakins
+
+
+../include/%.h: ./emc/kinematics/%.h
+	cp $^ $@
+../include/%.hh: ./emc/kinematics/%.hh
+	cp $^ $@
