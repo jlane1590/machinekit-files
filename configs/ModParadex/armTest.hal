@@ -81,7 +81,7 @@ setp hpg.encoder.00.chan.01.index-pin      	18
 setp hpg.encoder.00.chan.01.index-enable 	0
 setp hpg.encoder.00.chan.01.counter-mode	0
 setp hpg.encoder.00.chan.01.reset				0
-setp hpg.encoder.00.chan.01.scale					844.8
+setp hpg.encoder.00.chan.01.scale					4.54
 
 setp hpg.encoder.00.chan.02.A-pin        			7
 setp hpg.encoder.00.chan.02.B-pin        			16
@@ -89,7 +89,7 @@ setp hpg.encoder.00.chan.02.index-pin      	19
 setp hpg.encoder.00.chan.02.index-enable 	0
 setp hpg.encoder.00.chan.02.counter-mode	0
 setp hpg.encoder.00.chan.02.reset				0
-setp hpg.encoder.00.chan.02.scale					844.8
+setp hpg.encoder.00.chan.02.scale					4.54
 
 setp hpg.encoder.00.chan.03.A-pin        			0
 setp hpg.encoder.00.chan.03.B-pin        			6
@@ -153,7 +153,7 @@ setp pid.2.FF1					0.7
 setp pid.2.FF2					0.0
 
 setp pid.3.maxoutput 				5.0
-setp pid.3.deadband 				0.05
+setp pid.3.deadband 				10.0
 setp pid.3.Pgain 					20.0
 setp pid.3.Igain 						0.5
 setp pid.3.Dgain 					4.0
@@ -162,7 +162,7 @@ setp pid.3.FF1					0.7
 setp pid.3.FF2					0.0
 
 setp pid.4.maxoutput 				5.0
-setp pid.4.deadband 				0.05
+setp pid.4.deadband 				10.0
 setp pid.4.Pgain 					20.0
 setp pid.4.Igain 						0.5
 setp pid.4.Dgain 					4.0

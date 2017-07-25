@@ -34,7 +34,7 @@ dir_err () {
 SLOTS=/sys/devices/bone_capemgr.*/slots
 
 # Make sure required device tree overlay(s) are loaded
-for DTBO in ModParadex-Cape cape-bone-iio; do
+for DTBO in cape-universalh cape-bone-iio ; do
 
 	if grep -q $DTBO $SLOTS ; then
 		echo $DTBO overlay found
@@ -44,6 +44,11 @@ for DTBO in ModParadex-Cape cape-bone-iio; do
 		sleep 1
 	fi
 done;
+
+if [ ! -r /sys/devices/ocp.*/helper.*/AIN0 ] ; then
+	echo Analog input files not found in /sys/devices/ocp.*/helper.* >&2
+	exit 1;
+fi
 
 PRU=/sys/class/uio/uio0
 echo -n "Waiting for $PRU "
@@ -77,65 +82,58 @@ fi
 # enable bits properly.  These pins _can_ however be set here without
 # causing problems.  You may wish to do this for documentation or to make
 # sure the pin starts with a known value as soon as possible.
-  
-for GPIO in 67 69 26 27 65 78 76 30 60 31 48 5 4 49 14 81 80 79 77 75 73 71;  do
 
-	if [ ! -e /sys/class/gpio/gpio$GPIO/value ]; then
-		echo $GPIO > /sys/class/gpio/export
-	fi
-done;
+sudo $(which config-pin) -f - <<- EOF
 
-#sudo $(which config-pin) -f - <<- EOF
-#
-#	# eQEP encoder channel input pins
-#	P8.11	qep		#eQEP2B_in
-#	P8.12	qep		#eQEP2A_in
-#	P8.33	qep		#eQEP1B_in
-#	P8.35	qep		#eQEP1A_in
-#	P9.27	qep		#eQEP0B_in
-#	P9.92	qep		#eQEP0A_in, connected to P9.42
-#	
-#	# ePWM/eCAP pwm output pins
-#	P8.13	pwm		#ePWM2B
-#	P8.19	pwm		#ePWM2A
-#	P9.14	pwm		#ePWM1A
-#	P9.16	pwm		#ePWM1B
-#	P9.21	pwm		#ePWM0B
-#	P9.22	pwm		#ePWM0A
-#	P9.28	pwm2		#eCAP2
-#	
-#	# hpg encoder pru direct input pins
-#	P8.15	pruin			#hpg0B_in pru0_15
-#	P8.16	pruin			#hpg0A_in pru0_14
-#	P9.24	pruin			#hpg2B_in pru0_16
-#	P9.25	pruin			#hpg2A_in pru0_7
-#	P9.29	pruin			#hpg1B_in pru0_1
-#	P9.30	pruin			#hpg1A_in pru0_2
-#	P9.31	pruin			#hpg3A_in pru0_0
-#	P9.91	pruin			#hpg3B_in pru0_6, connected to P9.41
-#	
-#	# pwm direction output pins
-#	P8.9	low			#ePWM2B_dir
-#	P8.14	low			#ePWM2B_dir_inv
-#	P8.17	low			#ePWM2A_dir
-#	P8.18	low			#ePWM2A_dir_inv
-#	P8.37	low			#ePWM0A_dir
-#	P8.39	low			#ePWM0A_dir_inv
-#	P9.11	low			#ePWM1A_dir
-#	P9.12	low			#ePWM1A_dir_inv
-#	P9.13	low			#ePWM1B_dir_inv
-#	P9.15	low			#ePWM1B_dir
-#	P9.17	low			#ePWM0B_dir
-#	P9.18	low			#eCAP2_dir
-#	P9.23	low			#ePWM0B_dir_inv
-#	P9.26	low			#eCAP2_dir_inv
-#
-#	# limit switch input pins
-##	P8.34	in_pd		#limit-u
-#	P8.36	in_pd		#limit-c
-#	P8.38	in_pd		#limit-b
-#	P8.40	in_pd		#limit-a
-#	P8.42	in_pd		#limit-z
-#	P8.44	in_pd		#limit-y
-#	P8.46	in_pd		#limit-x
-#EOF
+	# eQEP encoder channel input pins
+	P8.11	qep		#eQEP2B_in
+	P8.12	qep		#eQEP2A_in
+	P8.33	qep		#eQEP1B_in
+	P8.35	qep		#eQEP1A_in
+	P9.27	qep		#eQEP0B_in
+	P9.92	qep		#eQEP0A_in, connected to P9.42
+	
+	# ePWM/eCAP pwm output pins
+	P8.13	pwm		#ePWM2B
+	P8.19	pwm		#ePWM2A
+	P9.14	pwm		#ePWM1A
+	P9.16	pwm		#ePWM1B
+	P9.21	pwm		#ePWM0B
+	P9.22	pwm		#ePWM0A
+	P9.28	pwm2		#eCAP2
+	
+	# hpg encoder pru direct input pins
+	P8.15	pruin			#hpg0B_in pru0_15
+	P8.16	pruin			#hpg0A_in pru0_14
+	P9.24	pruin			#hpg2B_in pru0_16
+	P9.25	pruin			#hpg2A_in pru0_7
+	P9.29	pruin			#hpg1B_in pru0_1
+	P9.30	pruin			#hpg1A_in pru0_2
+	P9.31	pruin			#hpg3A_in pru0_0
+	P9.91	pruin			#hpg3B_in pru0_6, connected to P9.41
+	
+	# pwm direction output pins
+	P8.9	low			#ePWM2B_dir
+	P8.14	low			#ePWM2B_dir_inv
+	P8.17	low			#ePWM2A_dir
+	P8.18	low			#ePWM2A_dir_inv
+	P8.37	low			#ePWM0A_dir
+	P8.39	low			#ePWM0A_dir_inv
+	P9.11	low			#ePWM1A_dir
+	P9.12	low			#ePWM1A_dir_inv
+	P9.13	low			#ePWM1B_dir_inv
+	P9.15	low			#ePWM1B_dir
+	P9.17	low			#ePWM0B_dir
+	P9.18	low			#eCAP2_dir
+	P9.23	low			#ePWM0B_dir_inv
+	P9.26	low			#eCAP2_dir_inv
+
+	# limit switch input pins
+#	P8.34	in_pd		#limit-u
+	P8.36	in_pd		#limit-c
+	P8.38	in_pd		#limit-b
+	P8.40	in_pd		#limit-a
+	P8.42	in_pd		#limit-z
+	P8.44	in_pd		#limit-y
+	P8.46	in_pd		#limit-x
+EOF
