@@ -34,7 +34,7 @@ dir_err () {
 SLOTS=/sys/devices/bone_capemgr.*/slots
 
 # Make sure required device tree overlay(s) are loaded
-for DTBO in cape-universal cape-bone-iio ; do
+for DTBO in cape-universalh cape-bone-iio ; do
 
 	if grep -q $DTBO $SLOTS ; then
 		echo $DTBO overlay found
@@ -50,8 +50,18 @@ if [ ! -r /sys/devices/ocp.*/helper.*/AIN0 ] ; then
 	exit 1;
 fi
 
-if [ ! -r /sys/class/uio/uio0 ] ; then
-	echo PRU control files not found in /sys/class/uio/uio0 >&2
+PRU=/sys/class/uio/uio0
+echo -n "Waiting for $PRU "
+
+while [ ! -r $PRU ]
+do
+	echo -n "."
+	sleep 1
+done
+echo OK
+
+if [ ! -r $PRU ]; then
+	echo PRU control files not found in $PRU >&2
 	exit 1;
 fi
 
@@ -81,7 +91,7 @@ sudo $(which config-pin) -f - <<- EOF
 	P8.33	qep		#eQEP1B_in
 	P8.35	qep		#eQEP1A_in
 	P9.27	qep		#eQEP0B_in
-	P9.42	qep		#eQEP0A_in
+	P9.92	qep		#eQEP0A_in, connected to P9.42
 	
 	# ePWM/eCAP pwm output pins
 	P8.13	pwm		#ePWM2B
@@ -90,34 +100,40 @@ sudo $(which config-pin) -f - <<- EOF
 	P9.16	pwm		#ePWM1B
 	P9.21	pwm		#ePWM0B
 	P9.22	pwm		#ePWM0A
-#	P9.28	pwm2	#eCAP2
+	P9.28	pwm2		#eCAP2
 	
 	# hpg encoder pru direct input pins
-	P8.15	pruin		#hpg0A_in pru0_15
-	P8.16	pruin		#hpg0B_in pru0_14
-	P9.24	pruin		#hpg1A_in pru0_16
-	P9.25	pruin		#hpg1B_in pru0_7
-	P9.29	pruin		#hpg2A_in pru0_1
-	P9.30	pruin		#hpg2B_in pru0_2
-	P9.31	pruin		#hpg3A_in pru0_0
-	P9.91	pruin		#hpg3B_in pru0_6, connected to P9.41
+	P8.15	pruin			#hpg0B_in pru0_15
+	P8.16	pruin			#hpg0A_in pru0_14
+	P9.24	pruin			#hpg2B_in pru0_16
+	P9.25	pruin			#hpg2A_in pru0_7
+	P9.29	pruin			#hpg1B_in pru0_1
+	P9.30	pruin			#hpg1A_in pru0_2
+	P9.31	pruin			#hpg3A_in pru0_0
+	P9.91	pruin			#hpg3B_in pru0_6, connected to P9.41
 	
 	# pwm direction output pins
-	P8.14	gpio		#ePWM2B_dir
-	P8.17	gpio		#ePWM2A_dir
-	P9.13	gpio		#ePWM1A_dir
-	P9.15	gpio		#ePWM1B_dir
-	P9.19	gpio		#ePWM0B_dir
-	P9.23	gpio		#ePWM0A_dir
-#	P9.26	gpio		#eCAP2_dir
+	P8.9	low			#ePWM2B_dir
+	P8.14	low			#ePWM2B_dir_inv
+	P8.17	low			#ePWM2A_dir
+	P8.18	low			#ePWM2A_dir_inv
+	P8.37	low			#ePWM0A_dir
+	P8.39	low			#ePWM0A_dir_inv
+	P9.11	low			#ePWM1A_dir
+	P9.12	low			#ePWM1A_dir_inv
+	P9.13	low			#ePWM1B_dir_inv
+	P9.15	low			#ePWM1B_dir
+	P9.17	low			#ePWM0B_dir
+	P9.18	low			#eCAP2_dir
+	P9.23	low			#ePWM0B_dir_inv
+	P9.26	low			#eCAP2_dir_inv
 
 	# limit switch input pins
-	P8.34	gpio		#limit-x
-	P8.36	gpio		#limit-y
-	P8.38	gpio		#limit-z
-	P8.40	gpio		#limit-a
-	P8.42	gpio		#limit-b
-	P8.44	gpio		#limit-c
-#	P8.46	gpio		#limit-u
+#	P8.34	in_pd		#limit-u
+	P8.36	in_pd		#limit-c
+	P8.38	in_pd		#limit-b
+	P8.40	in_pd		#limit-a
+	P8.42	in_pd		#limit-z
+	P8.44	in_pd		#limit-y
+	P8.46	in_pd		#limit-x
 EOF
-

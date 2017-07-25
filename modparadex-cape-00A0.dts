@@ -168,7 +168,7 @@
         target = <&am33xx_pinmux>;
         __overlay__ {
 		
-			pins {
+			mp_pins:DFT_pins {
 				pinctrl-single,pins = <
 					0x094  0x07
 					0x09c  0x07
@@ -218,6 +218,18 @@
 			
 			};
         };
+    };
+
+    fragment@1 {
+	target = <&ocp>;
+	__overlay__ {
+	    mux_help:helper {
+		compatible = "bone-pinmux-helper";
+		pinctrl-names = "default";
+		pinctrl-0 = <&mp_pins>;
+		status = "okay";
+	    };
+	};
     };
 
 

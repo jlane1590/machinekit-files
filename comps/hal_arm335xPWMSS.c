@@ -555,7 +555,7 @@ static void update_ecap(pwmss_t *pwmss, long period)
 		ecap->oldDir = ecap->dir;
 		ecap->oldScale = ecap->scale;
 		
-		epwm++;
+		ecap++;
 	}
 }
 
