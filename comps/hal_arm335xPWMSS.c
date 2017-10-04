@@ -59,7 +59,7 @@
 
 /* this probably should be an ARM335x define */
 #if !defined(TARGET_PLATFORM_BEAGLEBONE)
-#error "This driver is for the beaglebone platform only"
+#error "This driver is for the beaglebone only"
 #endif
 
 #if !defined(BUILD_SYS_USER_DSO)
@@ -171,6 +171,7 @@ static int setup_epwm(epwm_t *epwm);
 static void update_epwm(pwmss_t *pwmss, long period);
 
 void disable_epwm(epwm_t *epwm);
+void disable_ecap(ecap_t *ecap);
 void disable_channel(epwm_t *epwm, int channel);
 void enable_channel(epwm_t *epwm, int channel);
 void set_channel_dc(epwm_t *epwm, int channel);
@@ -448,10 +449,16 @@ void rtapi_app_exit(void)
 {
 	int n;
     epwm_t *epwm;
+    ecap_t *ecap;
 	
 	for(n = 0; n < numpwm; n++){
 		epwm = &(epwm_array[n]);
 		disable_epwm(epwm);
+	}
+
+	for(n = 0; n < numcap; n++){
+		ecap = &(ecap_array[n]);
+		disable_ecap(ecap);
 	}
 	
     hal_exit(comp_id);
@@ -546,8 +553,10 @@ static void update_ecap(pwmss_t *pwmss, long period)
 				set_ecap_dc(ecap);
 			//check if the direction output has changed and update accordingly
 			if(ecap->outputType == 1)
-				if(ecap->dir != ecap->oldDir)
-					(*(ecap->dir_out)) = ecap->dir;
+			{
+				(*(ecap->dir_out)) = ecap->dir;
+				(*(ecap->dir_out_inv)) = !ecap->dir;
+			}
 		}
 		
 		ecap->oldEn = ecap->en;
@@ -834,9 +843,12 @@ static void update_epwm(pwmss_t *pwmss, long period)
 			if(epwm->scaled_dcA != epwm->old_scaled_dcA)
 				set_channel_dc(epwm, CHAN_A);
 			//check if the A direction output has changed and update accordingly
-			if(epwm->outputType == 1)
-				if(epwm->dirA != epwm->oldDirA)
+			if(epwm->outputType == 1){
+				//if(epwm->dirA != epwm->oldDirA){
 					(*(epwm->dirA_out)) = epwm->dirA;
+					(*(epwm->dirA_out_inv)) = !epwm->dirA;
+				//}
+			}
 			//check if channel A output is currently disabled and update registers accordingly
 			if(!epwm->oldEnA && epwm->enA)
 				enable_channel(epwm, CHAN_A);
@@ -875,8 +887,12 @@ static void update_epwm(pwmss_t *pwmss, long period)
 			if(epwm->scaled_dcB != epwm->old_scaled_dcB)
 				set_channel_dc(epwm, CHAN_B);
 			//check if the B direction output has changed and update accordingly
-			if(epwm->dirB != epwm->oldDirB)
-				(*(epwm->dirB_out)) = epwm->dirB;
+			if(epwm->outputType == 1){
+				//if(epwm->dirB != epwm->oldDirB){
+					(*(epwm->dirB_out)) = epwm->dirB;
+					(*(epwm->dirB_out_inv)) = !epwm->dirB;
+				//}
+			}
 			//check if channel B output is currently disabled and update registers accordingly
 			if(!epwm->oldEnB && epwm->enB)
 				enable_channel(epwm, CHAN_B);
@@ -916,23 +932,28 @@ static int setup_ecap(ecap_t *ecap)
 	ecap->resolution = 0.00025; //equates to 25kHz
 	ecap->outputType = type;
 
-	/* compute and set CAP1 (APRD) for desired PWM frequency */
-	ecap->period = (hal_u32_t)(100_000_000.0f / frequency) ;
-	ecap->resolution = 1.0f/(float)ecap->period;
+	/* set to APWM mode, set active high, disable sync in and out */
+	ecap->ecap_reg->ECCTL2 = (0x0 << 10) | (0x1 << 9) | (0x3 << 6) | (0x0 << 5);
 
-	ecap->ecap_reg->CAP1 = (unsigned int)ecap->period;
-	
 	/* set phase shift to zero */
 	ecap->ecap_reg->CTRPHS = 0;
 	
 	/* reset time stamp counter */
 	ecap->ecap_reg->TSCTR = 0;
 	
-	/* set to APWM mode, set active high, disable sync in and out, run counter */
-	ecap->ecap_reg->ECCTL2 = (0x0 << 10) | (0x1 << 9) | (0x3 << 6) | (0x0 << 5) | (0x1 << 4);
+	/* compute and set CAP1 (APRD) for desired PWM frequency */
+	ecap->period = (hal_u32_t)(100000000.0f / frequency) ;
+	ecap->resolution = 1.0f/(float)ecap->period;
+
+	ecap->ecap_reg->CAP1 = (unsigned int)ecap->period;
 
 	/*  setting duty cycle (CAP2) */
 	ecap->ecap_reg->CAP2 = (unsigned int)((float)ecap->period * ecap->scaled_dc);
+	
+	/* run counter */
+	ecap->ecap_reg->ECCTL2 = ecap->ecap_reg->ECCTL2 | (0x1 << 4);
+	/* set to APWM mode, set active high, disable sync in and out, run counter */
+	//ecap->ecap_reg->ECCTL2 = (0x0 << 10) | (0x1 << 9) | (0x3 << 6) | (0x0 << 5) | (0x1 << 4);
 	
     return 0;
 }
@@ -1093,6 +1114,10 @@ static int export_ecap(ecap_t *ecap)
         rtapi_print_msg(RTAPI_MSG_ERR,"Error exporting dir-out\n");
         return -1;
     }
+	if (hal_pin_bit_newf(HAL_OUT, &(ecap->dir_out_inv), comp_id, "%s.dir_inv", ecap->name)) {
+        rtapi_print_msg(RTAPI_MSG_ERR,"Error exporting dir-out-inv\n");
+        return -1;
+    }
 
     return 0;
 }
@@ -1103,7 +1128,7 @@ static int export_eqep(eqep_t *eqep)
         rtapi_print_msg(RTAPI_MSG_ERR,"Error exporting index-enable\n");
         return -1;
     }
-    if (hal_pin_bit_newf(HAL_IO, &(eqep->reset), comp_id, "%s.reset", eqep->name)) {
+    if (hal_pin_bit_newf(HAL_IN, &(eqep->reset), comp_id, "%s.reset", eqep->name)) {
         rtapi_print_msg(RTAPI_MSG_ERR,"Error exporting reset\n");
         return -1;
     }
@@ -1209,8 +1234,16 @@ static int export_epwm(epwm_t *epwm)
         rtapi_print_msg(RTAPI_MSG_ERR,"Error exporting A-dir-out\n");
         return -1;
     }
+	if (hal_pin_bit_newf(HAL_OUT, &(epwm->dirA_out_inv), comp_id, "%s.dir_A_inv", epwm->name)) {
+        rtapi_print_msg(RTAPI_MSG_ERR,"Error exporting A-dir-out-inv\n");
+        return -1;
+    }
 	if (hal_pin_bit_newf(HAL_OUT, &(epwm->dirB_out), comp_id, "%s.dir_B", epwm->name)) {
         rtapi_print_msg(RTAPI_MSG_ERR,"Error exporting B-dir-out\n");
+        return -1;
+    }
+	if (hal_pin_bit_newf(HAL_OUT, &(epwm->dirB_out_inv), comp_id, "%s.dir_B_inv", epwm->name)) {
+        rtapi_print_msg(RTAPI_MSG_ERR,"Error exporting B-dir-out-inv\n");
         return -1;
     }
 
@@ -1226,6 +1259,13 @@ void disable_epwm(epwm_t *epwm)
     epwm->epwm_reg->AQCTLB = 0x1 | ( 0x0 << 8);
 
     epwm->epwm_reg->TBCNT = 0;
+}
+
+void disable_ecap(ecap_t *ecap)
+{
+	ecap->ecap_reg->ECCTL2 = ecap->ecap_reg->ECCTL2 & (0x0 << 4);	//stop counter
+	ecap->ecap_reg->TSCTR = 0; //reset counter
+	ecap->ecap_reg->CAP2 = 0; //set duty cycle to zero
 }
 
 void disable_channel(epwm_t *epwm, int channel)

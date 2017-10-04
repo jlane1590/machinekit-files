@@ -35,7 +35,7 @@
 /*      "P8.5",     emmc    */
 /*      "P8.6",     emmc    */
 //      "P8.7",
-//      "P8.8",
+        "P8.8",
         "P8.9",
 //      "P8.10",
         "P8.11",
@@ -55,7 +55,7 @@
 /*      "P8.25",    emmc    */
 //      "P8.26",
 //      "P8.27",    /* hdmi    */
-        "P8.28",    /* hdmi    */
+//      "P8.28",    /* hdmi    */
 //      "P8.29",    /* hdmi    */
 //      "P8.30",    /* hdmi    */
 //      "P8.31",    /* hdmi    */
@@ -167,10 +167,9 @@
     fragment@0 {
         target = <&am33xx_pinmux>;
         __overlay__ {
-		
-			mp_pins:DFT_pins {
+		pins {
 				pinctrl-single,pins = <
-					//0x094  0x07
+					0x094  0x07
 					0x09c  0x07
 					0x034  0x24
 					0x030  0x24
@@ -181,7 +180,6 @@
 					0x02c  0x07
 					0x08c  0x07
 					0x020  0x24
-					0x0E8  0x07
 					0x0D4  0x22
 					0x0CC  0x27
 					0x0D0  0x22
@@ -219,18 +217,6 @@
 			
 			};
         };
-    };
-
-    fragment@1 {
-	target = <&ocp>;
-	__overlay__ {
-	    mux_help:helper {
-		compatible = "bone-pinmux-helper";
-		pinctrl-names = "default";
-		pinctrl-0 = <&mp_pins>;
-		status = "okay";
-	    };
-	};
     };
 
 

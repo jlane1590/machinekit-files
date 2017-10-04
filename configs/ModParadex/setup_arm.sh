@@ -78,7 +78,7 @@ fi
 # causing problems.  You may wish to do this for documentation or to make
 # sure the pin starts with a known value as soon as possible.
   
-for GPIO in 120 69 26 27 65 78 76 30 60 31 48 5 4 49 14 81 80 79 77 75 73 71;  do
+for GPIO in 67 69 26 27 65 78 76 30 60 31 48 5 4 49 14 81 80 79 77 75 73 71;  do
 
 	if [ ! -e /sys/class/gpio/gpio$GPIO/value ]; then
 		echo $GPIO > /sys/class/gpio/export

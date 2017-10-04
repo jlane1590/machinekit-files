@@ -141,6 +141,7 @@ typedef struct {
 	hal_bit_t				*en_in;
 	hal_float_t				*scale_in;
 	hal_bit_t				*dir_out;
+	hal_bit_t				*dir_out_inv;
 	
 	hal_float_t				scale;
 	hal_float_t				oldScale;
@@ -220,7 +221,9 @@ typedef struct {
 	hal_bit_t				*enB_in;
 	hal_float_t				*scale_in;
 	hal_bit_t				*dirA_out;
+	hal_bit_t				*dirA_out_inv;
 	hal_bit_t				*dirB_out;
+	hal_bit_t				*dirB_out_inv;
 	
 	hal_float_t				scale;
 	hal_float_t				oldScale;
