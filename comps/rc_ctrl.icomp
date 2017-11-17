@@ -1,0 +1,22 @@
+component rc_ctrl "Calculate necessary PWM duty cycle for desired RC servo position";
+pin in float in;
+pin out float out;
+pin in float freq = 50;
+pin in float baseWidth = 1500;
+pin in float baseAngle = 0;
+pin in float maxWidth = 2100;
+pin in float minWidth = 900;
+pin in float angleRange = M_PI;
+pin in float scale = 1;
+function rc_update (fp);
+license "GPL";
+;;
+#include <rtapi_math.h>
+FUNCTION(rc_update)
+{
+	float ratio = (maxWidth-minWidth)/angleRange;
+	float pulseWidth = baseWidth + (in - baseAngle)*ratio;
+	out = scale*(pulseWidth*freq)/1000000;
+
+	return 0;
+}
