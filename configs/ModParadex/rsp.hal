@@ -1,0 +1,266 @@
+# ########################################
+#
+# HAL file for BeagleBone for Fixed Rotary Stewart Platform
+#
+# ########################################
+
+# Launch the setup script to make sure hardware setup looks good
+loadusr -w sudo ./setup.sh
+
+# ###################################
+# Core EMC/HAL Loads
+# ###################################
+
+# Kinematics
+loadrt rspkins
+
+# Motion controller, get name and thread periods from ini file
+# Trajectory planner
+loadrt tp
+loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD traj_period_nsec=[EMCMOT]TRAJ_PERIOD num_joints=[TRAJ]AXES tp=tp kins=rspkins
+
+# GPIO Driver - outputs are pwm direction pins, inputs are homing switches
+#loadrt hal_bb_gpio output_pins=809,814,817,818,828,837,839,911,912,913,915,917,918,923,926 input_pins=834,836,838,840,842,844,846
+
+# PWMSS driver - 6 ePWM generators, 1 eCAP PWM generator
+loadrt hal_arm335xPWMSS epwms="ePWM0,ePWM1,ePWM2" ecaps="eCAP2" frequency=50 minDC=0 maxDC=100 type=0
+
+# HAL streamer to read stdin for pose commands
+loadrt streamer depth=1000 cfg="f"
+loadusr halstreamer -N hstreamer
+
+loadrt rc_ctrl count=6
+
+# ################################################
+# THREADS
+# ################################################
+
+# motion controller functions
+addf motion-command-handler 				servo-thread
+addf motion-controller							servo-thread
+# GPIO functions
+#addf bb_gpio.read									servo-thread
+#addf bb_gpio.write									servo-thread
+# PWMSS function
+addf pwmss.update								servo-thread
+# HAL streamer function
+addf streamer.0										servo-thread
+addf rc-ctrl.0								servo-thread
+addf rc-ctrl.1								servo-thread
+addf rc-ctrl.2								servo-thread
+addf rc-ctrl.3								servo-thread
+addf rc-ctrl.4								servo-thread
+addf rc-ctrl.5								servo-thread
+
+# ########################
+# RC Servo Setup
+# ########################
+
+#net streamer0 <= streamer.0.pin.0
+#net streamer0 => rc-ctrl.0.in
+
+setp rc-ctrl.0.inDeg	0
+setp rc-ctrl.0.scale	1
+setp rc-ctrl.0.maxWidth 2460
+setp rc-ctrl.0.minWidth 720
+setp rc-ctrl.0.baseWidth 1590
+
+setp rc-ctrl.1.inDeg	0
+setp rc-ctrl.1.scale	1
+setp rc-ctrl.1.maxWidth 2460
+setp rc-ctrl.1.minWidth 720
+setp rc-ctrl.1.baseWidth 1590
+
+setp rc-ctrl.2.inDeg	0
+setp rc-ctrl.2.scale	1
+setp rc-ctrl.2.maxWidth 2460
+setp rc-ctrl.2.minWidth 720
+setp rc-ctrl.2.baseWidth 1590
+
+setp rc-ctrl.3.inDeg	0
+setp rc-ctrl.3.scale	1
+setp rc-ctrl.3.maxWidth 2460
+setp rc-ctrl.3.minWidth 720
+setp rc-ctrl.3.baseWidth 1590
+
+setp rc-ctrl.4.inDeg	0
+setp rc-ctrl.4.scale	1
+setp rc-ctrl.4.maxWidth 2460
+setp rc-ctrl.4.minWidth 720
+setp rc-ctrl.4.baseWidth 1590
+
+setp rc-ctrl.5.inDeg	0
+setp rc-ctrl.5.scale	1
+setp rc-ctrl.5.maxWidth 2460
+setp rc-ctrl.5.minWidth 720
+setp rc-ctrl.5.baseWidth 1590
+
+# ######################
+# PWMSS SETUP
+# ######################
+
+# PID outputs required speed in in/sec, assume 5in/sec is the max linear speed the motors can produce under load
+# so 5in/sec corresponds to 100% duty cycle
+setp ePWM0.dc_scale				1.0
+setp ePWM1.dc_scale				1.0
+setp ePWM2.dc_scale				1.0
+
+setp eCAP2.dc_scale				1.0
+
+# ################
+# X [0] Axis
+# ################
+
+# axis enable chain
+newsig motor.00.enable bit
+sets motor.00.enable FALSE
+
+net motor.00.enable <= axis.0.amp-enable-out
+net motor.00.enable => ePWM2.en_B
+
+# position command, feedback, and velocity output
+net motor.00.pos-cmd <= axis.0.motor-pos-cmd
+net motor.00.pos-cmd => rc-ctrl.0.in
+
+#loop gui cmd to fb
+net motor.00.pos-cmd => axis.0.motor-pos-fb
+
+net motor.00.vel-out <= rc-ctrl.0.out
+net motor.00.vel-out => ePWM2.dc_B
+
+# ################
+# Y [1] Axis
+# ################
+
+# axis enable chain
+newsig motor.01.enable bit
+sets motor.01.enable FALSE
+
+net motor.01.enable <= axis.1.amp-enable-out
+net motor.01.enable => ePWM2.en_A
+
+# position command, feedback, and velocity output
+net motor.01.pos-cmd <= axis.1.motor-pos-cmd
+net motor.01.pos-cmd => rc-ctrl.1.in
+
+#loop gui cmd to fb
+net motor.01.pos-cmd => axis.1.motor-pos-fb
+
+net motor.01.vel-out <= rc-ctrl.1.out
+net motor.01.vel-out => ePWM2.dc_A
+
+# ################
+# Z [2] Axis
+# ################
+
+# axis enable chain
+newsig motor.02.enable bit
+sets motor.02.enable FALSE
+
+net motor.02.enable <= axis.2.amp-enable-out
+net motor.02.enable => ePWM0.en_A
+
+# position command, feedback, and velocity output
+net motor.02.pos-cmd <= axis.2.motor-pos-cmd
+net motor.02.pos-cmd => rc-ctrl.2.in
+
+#loop gui cmd to fb
+net motor.02.pos-cmd => axis.2.motor-pos-fb
+
+net motor.02.vel-out <= rc-ctrl.2.out
+net motor.02.vel-out => ePWM0.dc_A
+
+# ################
+# A [3] Axis
+# ################
+
+# axis enable chain
+newsig motor.03.enable bit
+sets motor.03.enable FALSE
+
+net motor.03.enable <= axis.3.amp-enable-out
+net motor.03.enable => ePWM1.en_B
+
+# position command, feedback, and velocity output
+net motor.03.pos-cmd <= axis.3.motor-pos-cmd
+net motor.03.pos-cmd => rc-ctrl.3.in
+
+#loop gui cmd to fb
+net motor.03.pos-cmd => axis.3.motor-pos-fb
+
+net motor.03.vel-out <= rc-ctrl.3.out
+net motor.03.vel-out => ePWM1.dc_B
+
+# ################
+# B [4] Axis
+# ################
+
+# axis enable chain
+newsig motor.04.enable bit
+sets motor.04.enable FALSE
+
+net motor.04.enable <= axis.4.amp-enable-out
+net motor.04.enable => ePWM1.en_A
+
+# position command, feedback, and velocity output
+net motor.04.pos-cmd <= axis.4.motor-pos-cmd
+net motor.04.pos-cmd => rc-ctrl.4.in
+
+#loop gui cmd to fb
+net motor.04.pos-cmd => axis.4.motor-pos-fb
+
+net motor.04.vel-out <= rc-ctrl.4.out
+net motor.04.vel-out => ePWM1.dc_A
+
+# ################
+# C [5] Axis
+# ################
+
+# axis enable chain
+newsig motor.05.enable bit
+sets motor.05.enable FALSE
+
+net motor.05.enable <= axis.5.amp-enable-out
+net motor.05.enable => ePWM0.en_B
+
+# position command, feedback, and velocity output
+net motor.05.pos-cmd <= axis.5.motor-pos-cmd
+net motor.05.pos-cmd => rc-ctrl.5.in
+
+#loop gui cmd to fb
+net motor.05.pos-cmd => axis.5.motor-pos-fb
+
+net motor.05.vel-out <= rc-ctrl.5.out
+net motor.05.vel-out => ePWM0.dc_B
+
+# ################
+# Yaw [6] Axis
+# ################
+
+## axis enable chain
+#newsig motor.06.enable bit
+#sets motor.06.enable FALSE
+#
+#net motor.06.enable <= axis.6.amp-enable-out
+#net motor.06.enable => eCAP2.en
+#
+## position command, feedback, and velocity output
+#net motor.06.pos-cmd <= axis.6.motor-pos-cmd
+#net motor.06.pos-cmd => rc-ctrl.6.in
+#
+##loop gui cmd to fb
+#net motor.06.pos-cmd => axis.6.motor-pos-fb
+#
+#net motor.06.vel-out <= rc-ctrl.6.out
+#net motor.06.vel-out => eCAP2.dc
+
+# ##################################################
+# Standard I/O - EStop, Enables, Limit Switches, Etc
+# ##################################################
+
+# estop loopback
+net estop-loop iocontrol.0.user-enable-out iocontrol.0.emc-enable-in
+
+# create signals for tool loading loopback
+net tool-prep-loop iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+net tool-change-loop iocontrol.0.tool-change => iocontrol.0.tool-changed
