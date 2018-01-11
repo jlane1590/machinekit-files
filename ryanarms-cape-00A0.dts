@@ -1,0 +1,374 @@
+// Copyright 2013
+// Charles Steinkuehler <charles@steinkuehler.net>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "ti,beaglebone", "ti,beaglebone-black";
+
+    /* identification */
+    part-number = "ryanarms-cape";
+    version = "00A0";
+
+    /* state the resources this cape uses */
+    exclusive-use =
+
+/*      "P8.1",     GND     */
+/*      "P8.2",     GND     */
+/*      "P8.3",     emmc    */
+/*      "P8.4",     emmc    */
+/*      "P8.5",     emmc    */
+/*      "P8.6",     emmc    */
+//      "P8.7",
+//      "P8.8",
+        "P8.9",
+//      "P8.10",
+        "P8.11",
+        "P8.12",
+        "P8.13",
+        "P8.14",
+        "P8.15",
+        "P8.16",
+        "P8.17",
+        "P8.18",
+        "P8.19",
+/*      "P8.20",    emmc    */
+/*      "P8.21",    emmc    */
+/*      "P8.22",    emmc    */
+/*      "P8.23",    emmc    */
+/*      "P8.24",    emmc    */
+/*      "P8.25",    emmc    */
+//      "P8.26",
+//      "P8.27",    /* hdmi    */
+        "P8.28",    /* hdmi    */
+//      "P8.29",    /* hdmi    */
+//      "P8.30",    /* hdmi    */
+//      "P8.31",    /* hdmi    */
+//      "P8.32",    /* hdmi    */
+        "P8.33",    /* hdmi    */
+        "P8.34",    /* hdmi    */
+        "P8.35",    /* hdmi    */
+        "P8.36",    /* hdmi    */
+        "P8.37",    /* hdmi    */
+        "P8.38",    /* hdmi    */
+        "P8.39",    /* hdmi    */
+        "P8.40",    /* hdmi    */
+//      "P8.41",    /* hdmi    */
+        "P8.42",    /* hdmi    */
+//      "P8.43",    /* hdmi    */
+        "P8.44",    /* hdmi    */
+//      "P8.45",    /* hdmi    */
+        "P8.46",    /* hdmi    */
+//      "uart5",    /* hdmi    */
+        "epwmss0",  /* hdmi    */
+        "ehrpwm0",  /* hdmi    */
+        "ecap0",    /* hdmi    */
+        "epwmss1",  /* hdmi    */
+        "ehrpwm1",  /* hdmi    */
+        "epwmss2",  /* hdmi    */
+        "ehrpwm2",  /* hdmi    */
+        "ecap2",    /* hdmi    */
+
+/*      "P9.1",     GND     */
+/*      "P9.2",     GND     */
+/*      "P9.3",     3.3V    */
+/*      "P9.4",     3.3V    */
+/*      "P9.5",     VDD_5V  */
+/*      "P9.6",     VDD_5V  */
+/*      "P9.7",     SYS_5V  */
+/*      "P9.8",     SYS_5V  */
+/*      "P9.9",     PWR_BUT */
+/*      "P9.10",    RESETn  */
+        "P9.11",
+        "P9.12",
+        "P9.13",
+        "P9.14",
+        "P9.15",
+        "P9.16",
+        "P9.17",
+        "P9.18",
+/*      "P9.19",    I2C     */
+/*      "P9.20",    I2C     */
+        "P9.21",
+        "P9.22",
+        "P9.23",
+        "P9.24",
+        "P9.25",
+        "P9.26",
+        "P9.27",
+        "P9.28",
+        "P9.29",
+        "P9.30",
+        "P9.31",
+/*      "P9.32",    VADC    */
+/*      "P9.33",    AIN4    */
+/*      "P9.34",    AGND    */
+/*      "P9.35",    AIN6    */
+/*      "P9.36",    AIN5    */
+/*      "P9.37",    AIN2    */
+/*      "P9.38",    AIN3    */
+/*      "P9.39",    AIN0    */
+/*      "P9.40",    AIN1    */
+        "P9.41",
+        "P9.41.1",
+        "P9.42",
+        "P9.42.1",
+/*      "P9.43",    GND     */
+/*      "P9.44",    GND     */
+/*      "P9.45",    GND     */
+/*      "P9.46",    GND     */
+
+//      "uart1",
+//      "uart2",
+//      "uart4",
+//      "uart5",    /* Conflicts with HDMI  */
+
+        "ehrpwm0A",
+        "ehrpwm0B",
+        "ehrpwm1A",
+        "ehrpwm1B",
+        "ehrpwm2A",
+        "ehrpwm2B",
+
+//        "epwmss0",
+//        "ehrpwm0",
+//        "ecap0",
+//        "epwmss1",
+//        "ehrpwm1",
+//        "epwmss2",
+//        "ehrpwm2",
+//        "ecap2",
+
+//      "i2c1",
+//      "spi1",
+//      "spi0",
+//      "dcan0",
+//      "dcan1",
+
+        "pru0",
+        "pru1",
+        "pruss";
+
+    fragment@0 {
+        target = <&am33xx_pinmux>;
+        __overlay__ {
+		
+			mp_pins:DFT_pins {
+				pinctrl-single,pins = <
+					//0x094  0x07
+					0x09c  0x07//
+					0x034  0x24//
+					0x030  0x24//
+					0x024  0x24//
+					0x028  0x07//
+					0x03c  0x26//
+					0x038  0x26//
+					0x02c  0x07//
+					0x08c  0x07//
+					0x020  0x24//
+					0x0E8  0x07//
+					0x0D4  0x22//
+					0x0CC  0x27
+					0x0D0  0x22//
+					0x0C8  0x27
+					0x0C0  0x07
+					0x0C4  0x27//
+					0x0B8  0x07
+					0x0BC  0x27//
+					0x0B4  0x27//
+					0x0AC  0x27//
+					0x0A4  0x27
+					
+					0x070  0x07//
+					0x078  0x07//
+					0x074  0x07
+					0x048  0x26//
+					0x040  0x07
+					0x04c  0x26//
+					0x15c  0x07//
+					0x158  0x07//
+					0x154  0x33//
+					0x150  0x33//
+					0x044  0x07
+					0x184  0x36//
+					0x1ac  0x26//
+					0x180  0x07
+					0x1a4  0x21
+					0x19c  0x24//
+					0x194  0x26//
+					0x198  0x26//
+					0x190  0x26//
+					0x1a8  0x26//
+					0x164  0x20//
+					//0x1a0  0x21
+				>;
+			
+			};
+        };
+    };
+
+    fragment@1 {
+	target = <&ocp>;
+	__overlay__ {
+	    mux_help:helper {
+		compatible = "bone-pinmux-helper";
+		pinctrl-names = "default";
+		pinctrl-0 = <&mp_pins>;
+		status = "okay";
+	    };
+	};
+    };
+
+
+    /************************/
+    /* Timers / PWM         */
+    /************************/
+
+    fragment@20 {
+        target = <&epwmss0>;
+        __overlay__ {
+            status = "okay";
+        };
+    };
+
+    fragment@21 {
+        target = <&ehrpwm0>;
+        __overlay__ {
+            status = "okay";
+            pinctrl-names = "default";
+            pinctrl-0 = <>; 
+        };
+    };
+
+    fragment@22 {
+        target = <&ecap0>;
+        __overlay__ {
+            status = "okay";
+            pinctrl-names = "default";
+            pinctrl-0 = <>; 
+        };
+    };
+
+    fragment@23 {
+        target = <&epwmss1>;
+        __overlay__ {
+            status = "okay";
+        };
+    };
+
+    fragment@24 {
+        target = <&ehrpwm1>;
+        __overlay__ {
+            status = "okay";
+            pinctrl-names = "default";
+            pinctrl-0 = <>; 
+        };
+    };
+
+    fragment@25 {
+        target = <&epwmss2>;
+        __overlay__ {
+            status = "okay";
+        };
+    };
+
+    fragment@26 {
+        target = <&ehrpwm2>;
+        __overlay__ {
+            status = "okay";
+            pinctrl-names = "default";
+            pinctrl-0 = <>; 
+        };
+    };
+
+    fragment@27 {
+        target = <&ecap2>;
+        __overlay__ {
+            status = "okay";
+            pinctrl-names = "default";
+            pinctrl-0 = <>; 
+        };
+    };
+
+    /************************/
+    /* PRUSS                */
+    /************************/
+
+    fragment@40 {
+        target = <&pruss>;
+        __overlay__ {
+            status = "okay";
+        };
+    };
+
+
+    /************************/
+    /* eQEP                 */
+    /************************/
+
+    fragment@50 {
+	target = <&eqep0>;
+	__overlay__ {
+            pinctrl-names = "default";
+            pinctrl-0 = <>;
+
+            count_mode = <0>;  /* 0 - Quadrature mode, normal 90 phase offset cha & chb.  1 - Direction mode.  cha input = clock, chb input = direction */
+            swap_inputs = <0>; /* Are channel A and channel B swapped? (0 - no, 1 - yes) */
+            invert_qa = <0>;   /* Should we invert the channel A input?  */
+            invert_qb = <0>;   /* Should we invert the channel B input? I invert these because my encoder outputs drive transistors that pull down the pins */
+            invert_qi = <0>;   /* Should we invert the index input? */
+            invert_qs = <0>;   /* Should we invert the strobe input? */
+
+	    status = "okay";
+	};
+    };
+
+    fragment@51 {
+	target = <&eqep1>;
+	__overlay__ {
+            pinctrl-names = "default";
+            pinctrl-0 = <>;
+
+            count_mode = <0>;  /* 0 - Quadrature mode, normal 90 phase offset cha & chb.  1 - Direction mode.  cha input = clock, chb input = direction */
+            swap_inputs = <0>; /* Are channel A and channel B swapped? (0 - no, 1 - yes) */
+            invert_qa = <0>;   /* Should we invert the channel A input?  */
+            invert_qb = <0>;   /* Should we invert the channel B input? I invert these because my encoder outputs drive transistors that pull down the pins */
+            invert_qi = <0>;   /* Should we invert the index input? */
+            invert_qs = <0>;   /* Should we invert the strobe input? */
+
+	    status = "okay";
+	};
+    };
+
+    fragment@52 {
+	target = <&eqep2>;
+	__overlay__ {
+            pinctrl-names = "default";
+            pinctrl-0 = <>;
+
+            count_mode = <0>;  /* 0 - Quadrature mode, normal 90 phase offset cha & chb.  1 - Direction mode.  cha input = clock, chb input = direction */
+            swap_inputs = <0>; /* Are channel A and channel B swapped? (0 - no, 1 - yes) */
+            invert_qa = <0>;   /* Should we invert the channel A input?  */
+            invert_qb = <0>;   /* Should we invert the channel B input? I invert these because my encoder outputs drive transistors that pull down the pins */
+            invert_qi = <0>;   /* Should we invert the index input? */
+            invert_qs = <0>;   /* Should we invert the strobe input? */
+
+	    status = "okay";
+	};
+    };
+};
