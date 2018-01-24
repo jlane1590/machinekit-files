@@ -1,0 +1,42 @@
+component rc_ctrl "Calculate necessary PWM duty cycle for desired RC servo position";
+pin in float in;
+pin out float out;
+pin in float freq = 50;
+pin in float baseWidth = 1500;
+pin in float baseAngle = 0;
+pin in float maxWidth = 2100;
+pin in float minWidth = 900;
+pin in float angleRange = 180;
+pin in float scale = 1;
+pin in bit inDeg = 0;
+function _;
+
+license "GPL";
+;;
+#include <rtapi_math.h>
+
+#define radians(x) (x * M_PI) / 180.0
+
+static int firstRun = 1;
+static float ratio = 1;
+static float range = 1;
+static float home = 0;
+
+FUNCTION(_)
+{
+	if(firstRun == 1){
+		range = radians(angleRange);
+		home = radians(baseAngle);
+		ratio = (maxWidth-minWidth)/range;
+		firstRun = 0;	
+	}
+
+	float position = 0;
+	if(inDeg){
+		position = radians(in);
+	}else{
+		position = in;
+	}
+	float pulseWidth = baseWidth - (position - home)*ratio;
+	out = scale*(pulseWidth*freq)/1000000;
+}
